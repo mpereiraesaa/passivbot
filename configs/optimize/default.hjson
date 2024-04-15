@@ -14,7 +14,7 @@
   # choices: [p/pso/particle_swarm_optimization, h/hs/harmony_search]
   algorithm: h
 
-  n_cpus: 14
+  n_cpus: 30
   iters: 50000
 
   # to reduce overfitting, perform backtest with multiple start dates, taking mean of metrics as final analysis
@@ -48,7 +48,7 @@
   maximum_loss_profit_ratio_long: 0.20
   maximum_loss_profit_ratio_short: 0.15
 
-  maximum_hrs_stuck_max_long: 70.0
+  maximum_hrs_stuck_max_long: 120.0
   maximum_hrs_stuck_max_short: 120.0
 
   maximum_exposure_ratios_mean_long: -1.0
@@ -92,7 +92,7 @@
       ema_span_1: [400.0, 1440.0]
       initial_qty_pct: [0.005, 0.01]
       initial_eprice_ema_dist: [-0.002, 0.004]
-      wallet_exposure_limit: [0.1, 0.3]
+      wallet_exposure_limit: [0.1, 0.2]
       ddown_factor: [0.4, 0.7]
       rentry_pprice_dist: [0.01, 0.03]
       rentry_pprice_dist_wallet_exposure_weighting: [6.0, 15.0]
