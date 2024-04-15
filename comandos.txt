@@ -1,0 +1,8 @@
+python3 tools/filter_coins.py -e binance -b 20000 -nc 20 -tl 2.1 -u binance_01
+
+naimul coins: rndr fet agix grt shib doge op
+
+mani coins: FET DOGE INJ AGIX
+
+maloz coins : RNDR LDO XRP DOGE INJ MATIC FET
+

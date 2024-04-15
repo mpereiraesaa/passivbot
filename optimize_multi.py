@@ -1,7 +1,7 @@
 import asyncio
+import os
 import random
 import multiprocessing
-import pprint
 import numpy as np
 import pandas as pd
 import json
@@ -9,7 +9,7 @@ import logging
 import argparse
 from deap import base, creator, tools, algorithms
 from collections import OrderedDict
-from procedures import utc_ms, make_get_filepath
+from procedures import load_live_config, utc_ms, make_get_filepath
 from multiprocessing import shared_memory
 
 from pure_funcs import (
@@ -20,7 +20,7 @@ from pure_funcs import (
     denumpyize,
     tuplify,
 )
-from backtest_multi import backtest_multi, prep_config_multi, prep_hlcs_mss_config
+from backtest_multi import backtest_multi, oj, prep_config_multi, prep_hlcs_mss_config
 from njit_multisymbol import backtest_multisymbol_recursive_grid
 
 
@@ -141,6 +141,8 @@ class Evaluator:
                 "do_longs",
                 "do_shorts",
                 "c_mults",
+                "live_configs_dir",
+                "default_config_path",
                 "symbols",
                 "exchange",
                 "qty_steps",
@@ -155,7 +157,40 @@ class Evaluator:
     def evaluate(self, individual):
         # individual is a list of floats
         config_ = self.config.copy()
-        live_configs = individual_to_live_configs(individual, config_["symbols"])
+
+        if os.path.isdir(config_["live_configs_dir"]):
+            live_configs_fnames = sorted(
+                [f for f in os.listdir(config_["live_configs_dir"]) if f.endswith(".json")]
+            )
+        else:
+            live_configs_fnames = []
+
+        max_len_symbol = max([len(s) for s in config_["symbols"]])
+        live_configs = {symbol: {"long": {}, "short": {}} for symbol in config_["symbols"]}
+        for symbol in config_["symbols"]:
+            live_config_fname_l = [x for x in live_configs_fnames if symbol in x]
+            live_configs_dir_fname = (
+                None
+                if live_config_fname_l == []
+                else oj(config_["live_configs_dir"], live_config_fname_l[0])
+            )
+
+            for path in [
+                live_configs_dir_fname,
+                config_["default_config_path"],
+            ]:
+                if path is not None and os.path.exists(path):
+                    try:
+                        live_configs[symbol] = load_live_config(path)
+                        logging.info(f"{symbol: <{max_len_symbol}} loaded live config: {path}")
+                        break
+                    except Exception as e:
+                        logging.error(f"failed to load live config {symbol} {path} {e}")
+            else:
+                raise Exception(f"no usable live config found for {symbol}")
+
+
+        live_configs = individual_to_live_configs(individual, live_configs)
         for key in [
             "loss_allowance_pct",
             "stuck_threshold",
@@ -204,26 +239,6 @@ def get_individual_keys():
         "global_loss_allowance_pct",
         "global_stuck_threshold",
         "global_unstuck_close_pct",
-        "long_ddown_factor",
-        "long_ema_span_0",
-        "long_ema_span_1",
-        "long_initial_eprice_ema_dist",
-        "long_initial_qty_pct",
-        "long_markup_range",
-        "long_min_markup",
-        "long_n_close_orders",
-        "long_rentry_pprice_dist",
-        "long_rentry_pprice_dist_wallet_exposure_weighting",
-        "short_ddown_factor",
-        "short_ema_span_0",
-        "short_ema_span_1",
-        "short_initial_eprice_ema_dist",
-        "short_initial_qty_pct",
-        "short_markup_range",
-        "short_min_markup",
-        "short_n_close_orders",
-        "short_rentry_pprice_dist",
-        "short_rentry_pprice_dist_wallet_exposure_weighting",
     ]
 
 
@@ -255,37 +270,18 @@ def decode_individual(individual):
     return decoded
 
 
-def individual_to_live_configs(individual, symbols):
+def individual_to_live_configs(individual, live_configs):
     keys = get_individual_keys()
     assert len(keys) == len(individual)
-    live_configs = {symbol: {"long": {}, "short": {}} for symbol in symbols}
     for i, key in enumerate(keys):
-        if key.startswith("global"):
-            if "TWE" in key:
-                pside = key[key.find("TWE") + 4 :]
-                for symbol in live_configs:
-                    live_configs[symbol][pside]["wallet_exposure_limit"] = individual[i] / len(
-                        symbols
-                    )
-            else:
-                live_configs[key.replace("global_", "")] = individual[i]
+        if "TWE" in key:
+            pside = key[key.find("TWE") + 4 :]
+            for symbol in live_configs:
+                live_configs[symbol][pside]["wallet_exposure_limit"] = individual[i] / len(
+                    live_configs
+                )
         else:
-            for symbol in symbols:
-                if key.startswith("long"):
-                    live_configs[symbol]["long"][key.replace("long_", "")] = individual[i]
-                elif key.startswith("short"):
-                    live_configs[symbol]["short"][key.replace("short_", "")] = individual[i]
-    for symbol in symbols:
-        for key, val in [
-            ("auto_unstuck_delay_minutes", 0.0),
-            ("auto_unstuck_ema_dist", 0.0),
-            ("auto_unstuck_qty_pct", 0.0),
-            ("auto_unstuck_wallet_exposure_threshold", 0.0),
-            ("backwards_tp", 1.0),
-            ("enabled", 1.0),
-        ]:
-            live_configs[symbol]["long"][key] = val
-            live_configs[symbol]["short"][key] = val
+            live_configs[key.replace("global_", "")] = individual[i]
     return live_configs
 
 
@@ -328,7 +324,7 @@ async def main():
         type=str,
         required=False,
         dest="optimize_config_path",
-        default="configs/optimize/multi.hjson",
+        default="configs/optimize/multi2.hjson",
         help="optimize config hjson file",
     )
     parser_items = [

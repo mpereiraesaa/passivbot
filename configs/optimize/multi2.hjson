@@ -1,0 +1,64 @@
+{
+  exchange: binance
+
+  # exchange from api-keys.json is used
+  user: binance_01
+
+  # format YYYY-MM-DD
+  start_date: 2021-05-01
+  // if end_date is "now", will use current date as end_date.
+  end_date: now
+
+  // Flags:
+  // -lm str: long mode. Choices: [n (normal), gs (graceful_stop)]. Will override long_enabled.
+  // -sm str: short mode. Choices: [n (normal), gs (graceful_stop)]. Will override short_enabled.
+      // normal mode: passivbot manages the position as normal
+      // graceful stop: if there is a position, passivbot will manage it, otherwise passivbot will not make new positions
+  // -lw float: wallet exposure limit long. Overrides value from live config. If absent, WE long is TWE_long / len(active_symbols_long)
+  // -sw: float: wallet exposure limit short. Overrides value from live config.
+
+  market_type: futures
+
+  symbols: {
+      FETUSDT: ''
+      AGIXUSDT: ''
+      XLMUSDT: ''
+      RNDRUSDT: ''
+      APTUSDT: ''
+      ARBUSDT: ''
+      LDOUSDT: ''
+      INJUSDT: ''
+      1000SHIBUSDT: ''
+      DOGEUSDT: ''
+      1000PEPEUSDT: ''
+  }
+
+  # Directory where to load live configs previously optimized
+  live_configs_dir: "latest_live_configs/"
+  default_config_path: configs/live/recursive_grid_mode.example.json
+
+  # backtests path
+  base_dir: backtests
+
+  n_cpus: 14
+  iters: 50000
+
+  starting_balance: 10000
+
+  worst_drawdown_lower_bound: 0.5 # will penalize worst_drawdowns greater than 50%
+
+  # will override starting configs' parameters
+  long_enabled: true
+  short_enabled: false
+  backwards_tp_long: true
+  backwards_tp_short: true
+
+  bounds:
+  {
+    global_TWE_long: [1.0, 2.0]
+    global_TWE_short: [1.0, 1.0]
+    global_loss_allowance_pct: [0.01, 0.30]
+    global_stuck_threshold: [0.01, 0.78]
+    global_unstuck_close_pct: [0.01, 0.30]
+  }
+}

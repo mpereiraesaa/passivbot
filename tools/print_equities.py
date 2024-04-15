@@ -96,9 +96,7 @@ async def main():
         data = {}
         exchange, key, secret, passphrase = load_exchange_key_secret_passphrase(user)
         data["exchange"] = exchange
-        cc = getattr(ccxt, exchange_map[exchange])(
-            {"apiKey": key, "secret": secret, "password": passphrase}
-        )
+        cc = getattr(ccxt, exchange_map[exchange])({"apiKey": key, "secret": secret, "password": passphrase})
         if exchange not in tickers:
             tickers[exchange] = await cc.fetch_tickers()
             for key in sorted(tickers[exchange]):

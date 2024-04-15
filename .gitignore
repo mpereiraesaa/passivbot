@@ -353,3 +353,6 @@ live_configs/*
 configs/live/multigrid.json
 # Reports
 reports/*
+
+latest_live_configs/
+caches/

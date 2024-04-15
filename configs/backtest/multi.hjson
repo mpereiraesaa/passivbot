@@ -3,32 +3,34 @@
   passivbot with multisym auto unstuck: will use profits from other positions to offset losses realized on stuck positions.
   */
 
-  # choices: [binance, bybit]
+  // exchange from api-keys.json is used
+  user: binance_01
+
   exchange: binance
 
   // how much below past peak balance to allow losses (default 1% == 0.01). Set to 0.0 to disable auto unstuck.
-  loss_allowance_pct: 0.005
+  loss_allowance_pct: 0.00992201782810187
 
   // if wallet_exposure / wallet_exposure_limit > stuck_threshold: consider position as stuck
-  stuck_threshold: 0.9
+  stuck_threshold: 0.7730801645653378
 
   // percentage of balance * wallet_exposure_limit to close for each unstucking order (default 1% == 0.01)
-  unstuck_close_pct: 0.01
+  unstuck_close_pct: 0.008548221915644158
 
   // total wallet exposure limits long and short. Exposure limit for each bot will be TWE_pos_side / len(symbols_pos_side)
-  TWE_long: 2.8
-  TWE_short: 1.0
+  TWE_long: 1.5982445322235332
+  TWE_short: 2.0
 
   long_enabled: true
-  short_enabled: true
+  short_enabled: false
 
   # format YYYY-MM-DD
   start_date: 2021-05-01
   // if end_date is "now" will use current date as end_date.
-  end_date: now
+  end_date: 2024-04-14
 
   # specify starting balance in USDT
-  starting_balance: 15000.0
+  starting_balance: 10000.0
 
   // Flags:
   // -lm str: long mode. Choices: [n (normal), gs (graceful_stop)]. Will override long_enabled.
@@ -39,20 +41,24 @@
   // -sw: float: wallet exposure limit short. Overrides value from live config.
   // -lc str: live config path. Specify live config path to override config from live_configs_dir and default_config_path.
 
-    symbols: [
-        MATICUSDT
-        RLCUSDT
-        GRTUSDT
-        CELRUSDT
-        HOTUSDT
-        CHRUSDT
-        ENSUSDT
-    ]
+  symbols: {
+      FETUSDT: ''
+      AGIXUSDT: ''
+      XLMUSDT: ''
+      RNDRUSDT: ''
+      APTUSDT: ''
+      ARBUSDT: ''
+      LDOUSDT: ''
+      INJUSDT: ''
+      1000SHIBUSDT: ''
+      DOGEUSDT: ''
+      1000PEPEUSDT: ''
+  }
 
   // Specify directory containing live configs.
   // They are sorted alphabetically, then the first config whose filename includes symbol is selected.
   // Set to "" to disable
-  live_configs_dir: "configs/live/multisymbol/no_AU/"
+  live_configs_dir: "latest_live_configs/"
 
   // if symbol is missing from live_configs_map, default to this config
   default_config_path: configs/live/recursive_grid_mode.example.json
