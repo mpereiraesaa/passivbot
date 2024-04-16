@@ -31,7 +31,7 @@ def copy_json_files_from_harmony_folders(dest_dir):
                     print(f"Copied {filename} from {full_folder_path} to {dest_dir}")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 2:
         print("Usage: python script.py <destination_directory>")
         sys.exit(1)
 
