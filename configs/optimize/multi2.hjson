@@ -19,7 +19,7 @@
 
   market_type: futures
 
-  symbols = {
+  symbols: {
       FETUSDT: '',
       AGIXUSDT: '',
       XLMUSDT: '',
